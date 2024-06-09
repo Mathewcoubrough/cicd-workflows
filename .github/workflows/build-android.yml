@@ -25,6 +25,10 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v3
 
+      # 'corepack enable' is needed for now till it's experimental, may remove the command once it becomes stable in later node releases
+      - name: Enable Corepack
+        run: corepack enable
+
       # Setup Web environment to install packages.
       - name: Setup Web environment
         uses: actions/setup-node@v4
@@ -47,10 +51,9 @@ jobs:
           # Builds on other branches will only read existing entries from the cache.
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/react-native' }}
 
-      # `corepack enable` is needed for now till it's experimental, may remove the command once it becomes stable in later node releases
       # Here '--immutable' will only use commited 'yarn.lock', and will throw error if some update is needed
       - name: Install node_modules
-        run: corepack enable && yarn install --immutable
+        run: yarn install --immutable
 
       # In some cases, Gradle is not executable by default, so we do this before the build process
       - name: Make gradlew executable
