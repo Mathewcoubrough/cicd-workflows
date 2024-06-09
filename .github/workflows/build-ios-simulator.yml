@@ -30,9 +30,16 @@ jobs:
           node-version: '20'
           cache: 'yarn'
 
+      - name: Restore node_modules from cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+          restore-keys: ${{ runner.os }}-node-modules-
+
       # Here '--immutable' will only use commited 'yarn.lock', and will throw error if some update is needed
       - name: Install node_modules
-        run:&& yarn install --immutable
+        run: yarn install --immutable
 
       # # improve iOS build compilation time
       # - name: Restore buildcache

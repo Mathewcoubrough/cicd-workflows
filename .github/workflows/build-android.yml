@@ -51,6 +51,13 @@ jobs:
           # Builds on other branches will only read existing entries from the cache.
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/react-native' }}
 
+      - name: Restore node_modules from cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+          restore-keys: ${{ runner.os }}-node-modules-
+
       # Here '--immutable' will only use commited 'yarn.lock', and will throw error if some update is needed
       - name: Install node_modules
         run: yarn install --immutable
