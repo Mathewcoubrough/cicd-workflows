@@ -30,6 +30,13 @@ jobs:
           node-version: '20'
           cache: 'yarn'
 
+      - uses: hendrikmuhs/ccache-action@v1.2
+        name: Xcode Compile Cache
+        with:
+          key: ${{ runner.os }}-ccache # makes a unique key w/related restore key internally
+          create-symlink: true
+          max-size: 1500M
+
       - name: Restore node_modules from cache
         uses: actions/cache@v4
         with:
@@ -97,13 +104,21 @@ jobs:
       - name: Run simulator build command
         working-directory: ios
         run: |
+          export CCACHE_SLOPPINESS=clang_index_store,file_stat_matches,include_file_ctime,include_file_mtime,ivfsoverlay,pch_defines,modules,system_headers,time_macros
+          export CCACHE_FILECLONE=true
+          export CCACHE_DEPEND=true
+          export CCACHE_INODECACHE=true
+          export CCACHE_LIMIT_MULTIPLE=0.95
+          ccache -s
           set -o pipefail
           xcodebuild \
+          CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ \
           -scheme rn_test_github_actions \
           -workspace rn_test_github_actions.xcworkspace \
           -sdk iphonesimulator \
           -configuration Release \
           -derivedDataPath build | xcpretty
+          ccache -s
 
       - name: Store build .app file as zip
         working-directory: ios
