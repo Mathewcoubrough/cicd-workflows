@@ -93,7 +93,7 @@ jobs:
       - name: Restore build artifacts from cache
         uses: actions/cache@v4
         with:
-          path: build
+          path: ios/build
           key: ${{ runner.os }}-ios-derived-data-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-ios-derived-data-
