@@ -17,26 +17,27 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup Web environment to install packages.
       - name: Setup Web environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
           cache: 'yarn'
 
-      # Here '--frozen-lockfile' will only use commited 'yarn.lock', and will throw error if some update is needed
+      # `corepack enable` is needed for now till it's experimental, may remove the command once it becomes stable in later node releases
+      # Here '--immutable' will only use commited 'yarn.lock', and will throw error if some update is needed
       - name: Install node_modules
-        run: yarn install --frozen-lockfile
+        run: corepack enable && yarn install --immutable
 
-      # improve iOS build compilation time
-      - name: Restore buildcache
-        uses: mikehardy/buildcache-action@v2
-        continue-on-error: true
+      # # improve iOS build compilation time
+      # - name: Restore buildcache
+      #   uses: mikehardy/buildcache-action@v2
+      #   continue-on-error: true
 
       - name: Restore Pods cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ios/Pods
@@ -49,7 +50,7 @@ jobs:
         run: npx pod-install ios
 
       # - name: Restore build artifacts from cache
-      #   uses: actions/cache@v3
+      #   uses: actions/cache@v4
       #   with:
       #     path: ~/Library/Developer/Xcode/DerivedData
       #     key: ${{ runner.os }}-ios-derived-data-${{ hashFiles('ios/Podfile.lock') }}
@@ -67,7 +68,7 @@ jobs:
       #     zip -r -y -o output/rn_test_github_actions.zip rn_test_github_actions.app
 
       # - name: Save build file as artifact
-      #   uses: actions/upload-artifact@v3
+      #   uses: actions/upload-artifact@v4
       #   with:
       #     name: rn-ios-simulator-build
       #     path: ~/Library/Developer/Xcode/DerivedData/rn_test_github_actions-*/Build/Products/Release-iphonesimulator/output
@@ -80,7 +81,6 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-          CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ \
           -scheme rn_test_github_actions \
           -workspace rn_test_github_actions.xcworkspace \
           -sdk iphonesimulator \
@@ -95,7 +95,7 @@ jobs:
           zip -r -y -o output/rn_test_github_actions.zip rn_test_github_actions.app
 
       - name: Save build file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rn-ios-simulator-build
           path: ios/build/Build/Products/Release-iphonesimulator/output
