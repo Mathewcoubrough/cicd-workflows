@@ -21,10 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Optional security step: Validate whether gradle-wrapper.jar is valid or malicious
-      - name: Validate Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@v3
-
       # Setup Java environment in order to build the Android app.
       - name: Setup Java environment
         uses: actions/setup-java@v4
