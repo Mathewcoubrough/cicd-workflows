@@ -17,7 +17,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup the flutter environment.
       - name: Setup Flutter environment
@@ -25,8 +25,15 @@ jobs:
         with:
           cache: true
 
+      - uses: hendrikmuhs/ccache-action@v1.2
+        name: Xcode Compile Cache
+        with:
+          key: ${{ runner.os }}-ccache # makes a unique key w/related restore key internally
+          create-symlink: true
+          max-size: 1500M
+
       - name: Restore Pods cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ios/Pods
@@ -36,7 +43,16 @@ jobs:
           restore-keys: ${{ runner.os }}-pods-
 
       - name: Build iOS ipa
-        run: flutter build ios --simulator --no-codesign --obfuscate --split-debug-info --config-only
+        run: |
+          export CCACHE_SLOPPINESS=clang_index_store,file_stat_matches,include_file_ctime,include_file_mtime,ivfsoverlay,pch_defines,modules,system_headers,time_macros
+          export CCACHE_FILECLONE=true
+          export CCACHE_DEPEND=true
+          export CCACHE_INODECACHE=true
+          export CCACHE_LIMIT_MULTIPLE=0.95
+          ccache -s
+          set -o pipefail
+          flutter build ios --simulator --no-codesign --obfuscate --split-debug-info --config-only
+          ccache -s
 
       - name: Store build .app file as zip
         run: |
@@ -46,7 +62,7 @@ jobs:
           zip -r -y -o output/flutter_github_actions.zip flutter_github_actions.app
 
       - name: Save build file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: flutter_github_actions
           path: build/ios/iphonesimulator/output

@@ -19,15 +19,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      # Optional security step: Validate whether gradle-wrapper.jar is valid or malicious
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
 
       # Setup Java environment in order to build the Android app.
       - name: Setup Java environment
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11'
-          cache: 'gradle'
+          java-version: '17'
+
+      # Setup gradle using official gradle action
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          add-job-summary: 'on-failure'
 
       # Setup the flutter environment.
       - name: Setup Flutter environment
@@ -51,7 +60,7 @@ jobs:
 
       # Upload generated apk to the artifacts.
       - name: Save apk file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: flutter-actions-test
           path: build/app/outputs/flutter-apk/app-release.apk
