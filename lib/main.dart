@@ -106,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'Just testing to deploy Flutter web on github pages',
+              'Just testing Flutter actions',
             ),
             const Text(
               'You have pushed the button this many times:',
