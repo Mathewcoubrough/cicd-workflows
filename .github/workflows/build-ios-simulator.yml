@@ -35,12 +35,12 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: ${{ runner.os }}-pods-
 
-      - name: Restore build artifacts from cache
-        uses: actions/cache@v4
-        with:
-          path: build/ios
-          key: ${{ runner.os }}-ios-derived-data-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: ${{ runner.os }}-ios-derived-data-
+      # - name: Restore build artifacts from cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: build/ios
+      #     key: ${{ runner.os }}-ios-derived-data-${{ hashFiles('ios/Podfile.lock') }}
+      #     restore-keys: ${{ runner.os }}-ios-derived-data-
 
       - name: Build iOS ipa
         run: flutter build ios --simulator --no-codesign --obfuscate --split-debug-info --config-only
