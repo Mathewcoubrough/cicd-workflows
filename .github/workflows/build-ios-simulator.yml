@@ -61,13 +61,6 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: ${{ runner.os }}-pods-
 
-      - name: Restore build artifacts from cache
-        uses: actions/cache@v4
-        with:
-          path: ios/App/build
-          key: ${{ runner.os }}-ios-derived-data-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: ${{ runner.os }}-ios-derived-data-
-
       - name: Build the ionic project for iOS
         run: ionic capacitor build ios --prod --no-open
 
