@@ -17,19 +17,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup Web environment to install packages.
       - name: Setup Web environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
           cache: 'npm'
           ## only required if project is not in the root
           # cache-dependency-path: subdir/package-lock.json
 
+      - name: Restore node_modules from cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+          restore-keys: ${{ runner.os }}-node-modules-
+
       - name: Install packages
-        run: npm install
+        run: npm ci
 
       - name: Build web
         run: npx ionic build --prod -- --base-href /test_github_action_delete/
@@ -47,7 +54,7 @@ jobs:
         run: mv www/newIndex.html www/404.html
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./www

@@ -17,28 +17,35 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup Web environment to install packages.
       - name: Setup Web environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
           cache: 'npm'
+
+      - name: Restore node_modules from cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+          restore-keys: ${{ runner.os }}-node-modules-
 
       - name: Install Ionic CLI
         run: npm install -g @ionic/cli
 
       - name: Install packages
-        run: npm install
+        run: npm ci
 
-      # improve iOS build compilation time
-      - name: Restore buildcache
-        uses: mikehardy/buildcache-action@v2
-        continue-on-error: true
+      # # improve iOS build compilation time
+      # - name: Restore buildcache
+      #   uses: mikehardy/buildcache-action@v2
+      #   continue-on-error: true
 
       - name: Restore Pods cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ios/Pods
@@ -51,7 +58,7 @@ jobs:
         run: ionic capacitor build ios --prod --no-open
 
       # - name: Restore build artifacts from cache
-      #   uses: actions/cache@v3
+      #   uses: actions/cache@v4
       #   with:
       #     path: ~/Library/Developer/Xcode/DerivedData
       #     key: ${{ runner.os }}-ios-derived-data-${{ hashFiles('ios/Podfile.lock') }}
@@ -69,7 +76,7 @@ jobs:
       #     zip -r -y -o output/rn_test_github_actions.zip rn_test_github_actions.app
 
       # - name: Save build file as artifact
-      #   uses: actions/upload-artifact@v3
+      #   uses: actions/upload-artifact@v4
       #   with:
       #     name: rn-ios-simulator-build
       #     path: ~/Library/Developer/Xcode/DerivedData/rn_test_github_actions-*/Build/Products/Release-iphonesimulator/output
@@ -82,7 +89,6 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-          CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ \
           -scheme App \
           -workspace App.xcworkspace \
           -sdk iphonesimulator \
@@ -98,7 +104,7 @@ jobs:
           zip -r -y -o output/ionic_github_action_ios.zip ionic_github_action_ios.app
 
       - name: Save build file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ionic-ios-simulator-build
           path: ios/App/build/Build/Products/Release-iphonesimulator/output
