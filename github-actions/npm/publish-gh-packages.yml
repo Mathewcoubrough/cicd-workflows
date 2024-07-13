@@ -17,18 +17,18 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setup .npmrc file to publish to GitHub Packages
       - name: Setup Web environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
           registry-url: 'https://npm.pkg.github.com'
           cache: 'yarn' # or 'npm'
 
       - name: Install packages
-        run: yarn # or 'npm ci'
+        run: yarn install --immutable # or 'npm ci'
 
       - name: Build the plugin
         run: yarn build # or 'npm run build'

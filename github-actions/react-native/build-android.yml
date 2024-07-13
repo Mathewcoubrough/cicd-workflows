@@ -22,37 +22,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Optional security step: Validate whether gradle-wrapper.jar is valid or malicious
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/actions/wrapper-validation@v3
+
+      # 'corepack enable' is needed for now till it's experimental, may remove the command once it becomes stable in later node releases
+      - name: Enable Corepack
+        run: corepack enable
 
       # Setup Web environment to install packages.
       - name: Setup Web environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
           cache: 'yarn' # or 'npm'
 
       # Setup Java environment in order to build the Android app.
-      - uses: actions/setup-java@v3
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
 
       # Setup gradle using official gradle action
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
-          generate-job-summary: false
+          add-job-summary: 'on-failure'
           # Optional: Only write to the cache for builds on the 'main' and 'react-native' branches. (Default is 'main' only.)
           # Builds on other branches will only read existing entries from the cache.
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/react-native' }}
 
-      # Here '--frozen-lockfile' will only use commited 'yarn.lock', and will throw error if some update is needed
+      - name: Restore node_modules from cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+          restore-keys: ${{ runner.os }}-node-modules-
+
+      # Here '--immutable' will only use commited 'yarn.lock', and will throw error if some update is needed
       - name: Install node_modules
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       # In some cases, Gradle is not executable by default, so we do this before the build process
       - name: Make gradlew executable
@@ -61,10 +73,10 @@ jobs:
 
       - name: Build Android release APK
         working-directory: android
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Save apk file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rn-build-android
           path: android/app/build/outputs/apk/release/app-release.apk
